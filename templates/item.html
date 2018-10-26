@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block content %}
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="card">
+            <div class="card-body">
+                <h4 class="card-title"><u>{{item.name}}</u></h4>
+                <h6>Category: {{item.category}}</h6>
+                <p class="card-body">{{item.description}}</p>
+                <a href='{{url_for("editItem", item_id = item.id)}}'><button type="button" class="btn btn-primary btn-sm">Edit Item</button></a>
+                <a href='{{url_for("deleteItem", item_id = item.id)}}'><button type="button" class="btn btn-danger btn-sm">Delete Item</button></a>
+                <a href='{{url_for("jsonItem", item_id = item.id)}}'><button type="button" class="btn btn-warning btn-sm">JSON</button></a>
+            </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

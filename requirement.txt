@@ -1,0 +1,9 @@
+python
+flask
+Flask-SQLAlchemy
+flask-oidc
+okta
+sqlalchemy
+flask_wtf
+wtforms
+flask_bootstrap
