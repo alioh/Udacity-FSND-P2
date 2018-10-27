@@ -98,9 +98,13 @@ def index():
     title = 'Your Catalog'
     user = session.query(User).filter_by(
         email=oidc.user_getfield('email')).first()
-    items = session.query(Item).filter_by(user_id=user.id).all()
-    return render_template('index.html', items=items,
-                           user=user.id, categories=categories, title=title)
+    if user:
+        items = session.query(Item).filter_by(user_id=user.id).all()
+        return render_template('index.html', items=items,
+                                user=user.id, categories=categories,
+                                title=title)
+    else:
+        return redirect(url_for('login'))
 
 
 #   User can get json of one item
