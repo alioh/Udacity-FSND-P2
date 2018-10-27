@@ -101,28 +101,54 @@ def index():
     if user:
         items = session.query(Item).filter_by(user_id=user.id).all()
         return render_template('index.html', items=items,
-                                user=user.id, categories=categories,
-                                title=title)
+                               user=user.id, categories=categories,
+                               title=title)
     else:
         return redirect(url_for('login'))
 
 
 #   User can get json of one item
+#   If user is not signed in, they will redirect to login page,
+#   if the user is not the owner of the item, they will receive 403 page
+#   if the item doesn't exist, they will receive 404 page
 @app.route('/item/<int:item_id>/json', methods=['GET'])
 @oidc.require_login
 def jsonItem(item_id):
     user = session.query(User).filter_by(
         email=oidc.user_getfield('email')).first()
     item = session.query(Item).filter_by(id=item_id).first()
-    return jsonify(item=item.serialize)
+    if user:
+        if item:
+            if user.id == item.user_id:
+                return jsonify(item=item.serialize)
+            else:
+                abort(403)
+        else:
+            abort(404)
+    else:
+        return redirect(url_for('login'))
 
 
-#   User can get json file of all their itmes
+#   User can get json file of all their items
+#   If user is not signed in, they will redirect to login page,
+#   if the user is not the owner of the item, they will receive 403 page
+#   if the item doesn't exist, they will receive 404 page
 @app.route('/index/<int:user_id>/json', methods=['GET'])
 @oidc.require_login
 def jsonAll(user_id):
+    user = session.query(User).filter_by(
+        email=oidc.user_getfield('email')).first()
     items = session.query(Item).filter_by(user_id=user_id).all()
-    return jsonify(item=[i.serialize for i in items])
+    if user:
+        if items:
+            if user.id == user_id:
+                return jsonify(item=[i.serialize for i in items])
+            else:
+                abort(403)
+        else:
+            abort(404)
+    else:
+        return redirect(url_for('login'))
 
 
 #   Creating Flask Forms
@@ -167,7 +193,6 @@ def dashboard():
         email=oidc.user_getfield('email')).first()
     form = Dashboard()
     title = title = "{}'s dashboard".format(user.name)
-    # try:
     #   populate email in html
     form.email.data = user.email
     #   Do changes if user asked
@@ -179,9 +204,6 @@ def dashboard():
     form.name.data = user.name
     return render_template('dashboard.html',
                            user=user, form=form, title=title)
-    # except:
-    #     return render_template('dashboard.html',
-    #                             user=user, form=form, title=title)
 
 
 #   View all items in specific category
@@ -298,7 +320,7 @@ def deleteItem(item_id):
 @app.route("/logout")
 def logout():
     oidc.logout()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 
 #   Handles error 404
